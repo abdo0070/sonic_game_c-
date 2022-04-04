@@ -60,7 +60,7 @@ void shooting_ball(RenderWindow &window,CircleShape &c1, CircleShape& c2) {
 		c1.setPosition(Mouse::getPosition(window).x, c1.getPosition().y);
 	}
 	else {
-		c1.move(0, -10.f);
+		c1.move(0, -20.f);
 	}
 	if (c1.getGlobalBounds().intersects(c2.getGlobalBounds())) {
 		score++;
