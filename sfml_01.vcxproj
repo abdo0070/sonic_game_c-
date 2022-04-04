@@ -18,16 +18,13 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="Source.cpp" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{f5d17ba9-85fa-47d4-9dd5-f4630c4a2e1c}</ProjectGuid>
     <RootNamespace>sfml01</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-    <ProjectName>sonic</ProjectName>
+    <ProjectName>Sonic_Game</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -148,6 +145,19 @@
       <AdditionalDependencies>sfml-graphics.lib;sfml-window.lib;sfml-system.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="menu.cpp" />
+    <ClCompile Include="test2.cpp" />
+    <ClCompile Include="test1.cpp" />
+    <ClCompile Include="test3.cpp" />
+    <ClCompile Include="test4.cpp" />
+    <ClCompile Include="SP_project.cpp" />
+    <ClCompile Include="test6.cpp" />
+    <ClCompile Include="test7.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="menu.h" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
