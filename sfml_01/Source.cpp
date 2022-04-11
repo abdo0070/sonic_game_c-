@@ -4,21 +4,28 @@
 using namespace sf;
 void move(RenderWindow& window, Sprite& sonic);
 int score = 0, time1 = 10, time2 = 0;
-int x, y;
+int x = 0, y = 0;
 int click = 0;
+struct pos {
+	int x, y;
+}sonicPos;
+static const int SONIC_Y_BUTTOM = 550;
+int index = 0;
+float frame = 0.f;
+float frameSpeed = 0.4f;
+const int changeCount = 5;
+const int gravity = 8;
+bool isJumping = false;
+bool isBottom = true;
 int main() {
-	bool jumb = false, button = true;
-	const int gravity = 18;
-	int  mass = 50;
-	// vec
 	RenderWindow window(VideoMode(800, 600), "Sonic");
 	window.setFramerateLimit(30);
 	Texture sonicF;
 	sonicF.loadFromFile("Tex/SonicAnimation.png");
 	Sprite sonic(sonicF);
 	// this to make photo subrectangles
-	sf::IntRect r(0, 0, 40, 50);
-	sonic.setScale(2.5f, 2.5f);
+	//sonic.setScale(2.5f, 2.5f);
+	sonic.setTextureRect(IntRect(x * 35, y * 41, 35, 41));
 	// font and texts
 	Font font;
 	font.loadFromFile("Font/font.ttf");
@@ -35,6 +42,8 @@ int main() {
 	text1.setFillColor(Color::White);
 	text1.setStyle(Text::Bold);
 	text1.setString(t1);
+	sonicPos.x = 50;
+	sonicPos.y = SONIC_Y_BUTTOM;
 	// the mouse 
 	Texture m;
 	m.loadFromFile("Tex/mouse.png");
@@ -50,12 +59,9 @@ int main() {
 	Texture back;
 	back.loadFromFile("Tex/background1.jfif");
 	background.setTexture(&back);
-
 	void UI(RenderWindow & window, Text & text, Text & text1, Sprite & mouse, RectangleShape & background);
 	while (window.isOpen()) {
 		Event event;
-
-
 		while (window.pollEvent(event)) {
 			if (event.type == Event::Closed)
 				window.close();
@@ -66,7 +72,7 @@ int main() {
 		// this is the main game
 		// DRAW
 		window.clear(Color::White);
-		//move(window,sonic);
+
 		if (click == 0)
 			UI(window, text1, text, mouse, background);
 		if (click == 1)
@@ -77,31 +83,65 @@ int main() {
 
 }
 void move(RenderWindow& window, Sprite& sonic) {
-	sf::IntRect r(23 * x, y, 36, 41);
-	sonic.setTextureRect(r);
-	if (Keyboard::isKeyPressed(Keyboard::Down) && sonic.getPosition().y < window.getSize().y - .5 * sonic.getScale().y) {
-		sonic.move(0.f, 10.f);
-	}
-	if (Keyboard::isKeyPressed(Keyboard::Up) && sonic.getPosition().y >= 0) {
-		sonic.move(0.f, -10.f);
-	}
-	if (Keyboard::isKeyPressed(Keyboard::Right) && sonic.getPosition().x <= window.getSize().x) {
-
+	if (Keyboard::isKeyPressed(Keyboard::D)) {
 		y = 0;
-		/*	x++;
-			x %= 10;*/
-		sf::IntRect r(23 * x, y, 36, 41);
-		sonic.setTextureRect(r);
-		sonic.move(10.f, 0.f);
+		sonic.setTextureRect(IntRect(x * 35, y * 41, 35, 41));
+		x++;
+		x %= 9;
+		sonic.move(5.f, 0.f);
 	}
-	if (Keyboard::isKeyPressed(Keyboard::Left) && sonic.getPosition().x >= 0) {
-		y = 1;
-		//x++;
-		//x %= 9;
-		sf::IntRect r(36, y, -36, 41);
-		sonic.setTextureRect(r);
-		sonic.move(-10.f, 0.f);
+
+	if (Keyboard::isKeyPressed(Keyboard::A)) {
+		y = 0;
+		sonic.setTextureRect(IntRect(x * 35, y * 41, -35, 41));
+		x %= 9;
+		x++;
+		if (x > 9) {
+			x = 0;
+		}
+		sonic.move(-5.f, 0.f);
 	}
+
+	if (Keyboard::isKeyPressed(Keyboard::Space)) {
+		if (Keyboard::isKeyPressed(Keyboard::Space))
+		{
+			if (isBottom && !isJumping)
+			{
+				//make jumping stage;
+				isJumping = true;
+				isBottom = false;
+			}
+		}
+		//dino jump(up and down)
+		if (isJumping)
+		{
+			sonicPos.y -= gravity;
+		}
+		else
+		{
+			sonicPos.y += gravity;
+		}
+
+		//dino jump limit, dino bottom limit.
+		if (sonicPos.y >= SONIC_Y_BUTTOM)
+		{
+			sonicPos.y = SONIC_Y_BUTTOM;
+			isBottom = true;
+		}
+		if (sonicPos.y <= SONIC_Y_BUTTOM - 100)
+		{
+			isJumping = false;
+		}
+
+		//dino step.
+		frame += frameSpeed;
+		if (frame > changeCount)
+		{
+			frame -= changeCount;
+			if (index >= 2) { index = 0; }
+		}
+	}
+	sonic.setPosition(sonic.getPosition().x, sonicPos.y);
 	window.draw(sonic);
 }
 void UI(RenderWindow& window, Text& text, Text& text1, Sprite& mouse, RectangleShape& background) {
@@ -148,7 +188,7 @@ void UI(RenderWindow& window, Text& text, Text& text1, Sprite& mouse, RectangleS
 		text1.setFillColor(Color::Black);
 	}
 	if (mouse.getGlobalBounds().intersects(text1.getGlobalBounds()) && Mouse::isButtonPressed(Mouse::Left)) {
-		click == 1;
+		click = 1;
 	}
 	if (mouse.getGlobalBounds().intersects(text.getGlobalBounds()) && Mouse::isButtonPressed(Mouse::Left)) {
 		window.close();
