@@ -1,23 +1,45 @@
 #include<SFML/Graphics.hpp>
 #include<SFML/Window.hpp>
+#include<ctime>
+#include<SFML/Audio.hpp>
 #include<iostream>
 
 #define X 36
 #define Y 41
 #define WIDTH 1280
 #define HEIGHT 720
+#define size 3
 
 using namespace sf;
+using namespace std;
+
+struct enemies
+{
+	Texture enemytexture;
+	Sprite enemy;
+	bool isvisible = true;
+}; enemies enemy[size];
+
+
 void SONIC_ANIMATION(RenderWindow& window, Sprite& sonic, View& camera);
 void GameWorld(RenderWindow& window, Sprite& flag, Sprite Catus[5], Sprite Block1[10], Sprite Block2[10], Sprite backgroundArr[10], Sprite& ground, Sprite& background);
 void UI(RenderWindow& window, Text& text, Text& text1, Sprite& mouse, RectangleShape& background);
-void Intersections(RenderWindow& window, Sprite& Sonic, Sprite catus[5], Sprite& flag);
-void CameraView(RenderWindow& window, View& camera, Sprite& sonic);
+void Intersections(RenderWindow& window, Sprite& sonic, Sprite catus[5], Sprite& flag, Sprite coin[], Sound& sound, enemies enemy[], Text& text, Sound& soundout, Text& text3, int& Score);
+void CameraView(RenderWindow& window, View& camera, Sprite& sonic, Text& text0, Text& text02, Text& text03);
 void RESUME(RenderWindow& window, Text& text, Text& text1, Sprite& mouse, RectangleShape& background);
 void jump(RenderWindow& window, Sprite& sonic);
+void drow_coin(RenderWindow& window, Sprite coin[]);
+enemies enemiesload_draw_move(RenderWindow& window, enemies enemy[], int& enemyanmationcounter, float Deltatime, Clock& clock);
+void calculatetime(int&, int&, Clock&);
+void How_we_want_Time(int, int, Text& text2, RenderWindow&);
 void END();
 
-int score = 0, time1 = 10, time2 = 0;
+
+
+//void collision_enemies_and_coin(RenderWindow& window, Sprite& sonic, Sprite coin[], Sound& sound, enemies enemy[], Text& text, Sound& soundout, Text& text3, int& score);
+
+
+int score = 0, time1 = 10, time2 = 0 ,time001=0 , timer002;
 int x = 0, y = 0;
 int click = 0;
 struct pos {
@@ -33,6 +55,9 @@ const int changeCount = 5;
 const int gravity = 5;
 bool isJumping = false;
 bool isBottom = true;
+
+int rings = 0, coinanmationcounter = 0, enemyanmationcounter = 0;
+
 int main(void) {
 	RenderWindow window(VideoMode(WIDTH, HEIGHT), "Sonic");
 	window.setFramerateLimit(30);
@@ -175,8 +200,77 @@ int main(void) {
 
 	sonic.setOrigin(sonic.getGlobalBounds().width, -300);
 
+	cout << "ddd";
+	int Score = 0, timer = 0;
+	float time = 0;
+
+	Clock clock, enemydeltatime;
+	float DeltaTime = 0;
+	int minutes = 0;
+
+	Texture Cointure;
+	Cointure.loadFromFile("Tex/coins1.PNG");
+	Sprite coin[4];
+	for (size_t i = 0; i < 4; i++) {
+		coin[i].setPosition(500 + (i * 70), 310);
+		coin[i].setTexture(Cointure);
+		coin[i].setScale(0.2, 0.2);
+
+	}
+
+	Font font0;
+	font0.loadFromFile("Tex/PlayfairDisplay-Bold.ttf");
+	Text text0;
+	text0.setFont(font0);
+	text0.setString("Rings : " + to_string(rings));
+	text0.setFillColor(Color(70, 67, 70, 255));
+	text0.setPosition(10, 10);
+	text0.setScale(.75, .75);
+	text0.setCharacterSize(32);
+
+
+
+	Text text02;
+	text02.setFont(font0);
+	text02.setString("Time : " + to_string(time));
+	text02.setFillColor(Color(70, 67, 70, 255));
+	text02.setPosition(10, 50);
+	text02.setScale(.75, .75);
+	text02.setCharacterSize(32);
+
+	Text text03;
+	text03.setFont(font0);
+	text03.setString("Score : " + to_string(Score));
+	text03.setFillColor(Color(70, 67, 70, 255));
+	text03.setPosition(10, 90);
+	text03.setScale(.75, .75);
+	text03.setCharacterSize(32);
+
+	SoundBuffer soundb;
+	soundb.loadFromFile("Tex/Ringsound (2).ogg");
+	Sound sound;
+	sound.setBuffer(soundb);
+
+	SoundBuffer sound_out;
+	sound_out.loadFromFile("Tex/ring_out.OGG");
+	Sound soundout;
+	soundout.setBuffer(sound_out);
+
+	SoundBuffer sound_ground;
+	sound_ground.loadFromFile("Tex/con_out1.ogg");
+	Sound soundground;
+	soundground.setBuffer(sound_ground);
+
+
 	while (window.isOpen()) {
 		Event event;
+		
+		int seconds = clock.getElapsedTime().asSeconds();
+		DeltaTime = enemydeltatime.restart().asSeconds();
+		enemies emove = enemiesload_draw_move(window, enemy, enemyanmationcounter, DeltaTime, clock);
+
+		calculatetime(seconds, minutes, clock);
+		How_we_want_Time(seconds, minutes, text2, window);
 		while (window.pollEvent(event)) {
 			if (event.type == Event::Closed)
 				window.close();
@@ -191,14 +285,23 @@ int main(void) {
 		if (click == 0)
 			UI(window, text1, text, mouse, backgroundForUI);
 		if (click == 1 && !rs) {
+			
 			SONIC_ANIMATION(window, sonic, camera);
 			GameWorld(window, flag, spritescactus, spritesstblock, spritesndblock, spritesbackground, ground, background);
-			Intersections(window, sonic, spritescactus, flag);
+			Intersections(window, sonic, spritescactus, flag, coin, sound, enemy, text0, soundout, text03, Score);
 			jump(window, sonic);
-			CameraView(window, camera, sonic);
+			CameraView(window, camera, sonic,text0,text02,text03);
 			window.setView(camera);
 			window.draw(sonic);
 			window.draw(flag);
+			window.draw(text0);
+			window.draw(text02);
+			soundground.play();
+			window.draw(text03);
+			drow_coin(window, coin);
+			enemiesload_draw_move(window, enemy, enemyanmationcounter, DeltaTime, clock);
+			calculatetime(seconds, minutes, clock);
+			How_we_want_Time(seconds, minutes, text02, window);
 			if (Keyboard::isKeyPressed(Keyboard::Tab)) {
 				rs = true;
 			}
@@ -207,32 +310,49 @@ int main(void) {
 			RESUME(window, text1, text2, mouse, backgroundForEnd);
 		}
 		window.setMouseCursorVisible(false);
+
+
 		window.display();
 	}
 }
-void Intersections(RenderWindow& window, Sprite& Sonic, Sprite catus[5], Sprite& flag) {
+void Intersections(RenderWindow& window, Sprite& sonic, Sprite catus[5], Sprite& flag, Sprite coin[], Sound& sound, enemies enemy[], Text& text0, Sound& soundout, Text& text03, int& Score) {
 
 	// this for Catus
 	for (int i = 0; i < 5; i++)
 	{
-		if (Sonic.getGlobalBounds().intersects(catus[i].getGlobalBounds())) {
+		if (sonic.getGlobalBounds().intersects(catus[i].getGlobalBounds())) {
 			// WHAT WILL HAPPEND
 		}
 	}
 	// this for flag 
 
-	if (Sonic.getGlobalBounds().intersects(flag.getGlobalBounds())) {
+	if (sonic.getGlobalBounds().intersects(flag.getGlobalBounds())) {
 		click = 2;
 	}
-	// for Coin
 
+	for (int i = 0; i < 4; i++) {
+		if (sonic.getGlobalBounds().intersects(coin[i].getGlobalBounds())) {
+			coin[i].setScale(0, 0);
+			rings++;
+			text0.setString("Rings : " + to_string(rings));
+			sound.play();
+		}
+	}
+	//int e_x = enemy[0].enemy.getPosition().x;
+	int e_y = enemy[0].enemy.getPosition().y;
+	if (sonic.getGlobalBounds().intersects(enemy[0].enemy.getGlobalBounds())) {
+		if (sonic.getGlobalBounds().intersects(enemy[0].enemy.getGlobalBounds()) && sonic.getPosition().y == e_y)
 
+		{
+			score = +100;
+			text03.setString("Score : " + to_string(Score));
+			enemy[0].enemy.setScale(0, 0);
+		}
+		rings = 0;
+		text0.setString("Rings : " + to_string(rings));
+		soundout.play();
 
-	// for Animals
-
-
-	// for enemies
-
+	}
 
 }
 void SONIC_ANIMATION(RenderWindow& window, Sprite& sonic, View& camera) {
@@ -312,12 +432,18 @@ void jump(RenderWindow& window, Sprite& sonic) {
 	}
 
 }
-void CameraView(RenderWindow& window, View& camera, Sprite& sonic) {
+void CameraView(RenderWindow& window, View& camera, Sprite& sonic,Text & text0, Text& text02, Text& text03) {
 	if (Keyboard::isKeyPressed(Keyboard::D)) {
 		camera.move(Vector2f(4.f, 0.f));
+		text0.move(4.f, 0.f);
+		text02.move(4.f, 0.f);
+		text03.move(4.f, 0.f);
 	}
 	else if (Keyboard::isKeyPressed(Keyboard::A)) {
 		camera.move(Vector2f(-5.3f, 0.f));
+		text0.move(-5.3f, 0.f);
+		text02.move(-5.3f, 0.f);
+		text03.move(-5.3f, 0.f);
 	}
 	sonic.setOrigin(sonic.getGlobalBounds().width, -300 - sonicPos.y);
 }
@@ -446,6 +572,109 @@ void RESUME(RenderWindow& window, Text& text, Text& text1, Sprite& mouse, Rectan
 	}
 	if (mouse.getGlobalBounds().intersects(text.getGlobalBounds()) && Mouse::isButtonPressed(Mouse::Left)) {
 		window.close();
+	}
+}
+void drow_coin(RenderWindow& window, Sprite coin[]) {
+	coinanmationcounter %= 4;
+	coinanmationcounter++;
+	if (time001 < 3)
+		time001++;
+	if (time001 >= 3) {
+		time001 = 0;
+		for (int i = 0; i < 4; i++) {
+			
+				coin[i].setTextureRect(IntRect(coinanmationcounter * 127.75, coinanmationcounter * 127.75, 127.75, 127.75));
+				window.draw(coin[i]);
+			}
+
+		}
+	}
+
+
+void collision_enemies_and_coin(RenderWindow& window, Sprite& sonic, Sprite coin[], Sound& sound, enemies enemy[], Text& text, Sound& soundout, Text& text3, int& score) {
+
+	for (int i = 0; i < 4; i++) {
+		if (sonic.getGlobalBounds().intersects(coin[i].getGlobalBounds())) {
+			coin[i].setScale(0, 0);
+			rings++;
+			text.setString("Rings : " + to_string(rings));
+			sound.play();
+		}
+	}
+	//int e_x = enemy[0].enemy.getPosition().x;
+	int e_y = enemy[0].enemy.getPosition().y;
+	if (sonic.getGlobalBounds().intersects(enemy[0].enemy.getGlobalBounds())) {
+		if (sonic.getGlobalBounds().intersects(enemy[0].enemy.getGlobalBounds()) && sonic.getPosition().y == e_y)
+
+		{
+			score = +100;
+			text3.setString("Score : " + to_string(score));
+			enemy[0].enemy.setScale(0, 0);
+		}
+		rings = 0;
+		text.setString("Rings : " + to_string(rings));
+		soundout.play();
+
+	}
+}
+enemies enemiesload_draw_move(RenderWindow& window, enemies enemy[], int& enemyanmationcounter, float Deltatime, Clock& clock) {
+
+	enemy[0].enemytexture.loadFromFile("Tex/enemy3.png");
+	for (int i = 0; i < size; i++) {
+		enemy[i].enemy.setTexture(enemy[i].enemytexture);
+		enemy[i].enemy.setScale(1, 1);
+		//enemy[i].enemy.setPosition(500, 320);
+	}
+
+	enemyanmationcounter %= 6;
+	enemyanmationcounter++;
+
+	if (timer002 < 11)
+		timer002++;
+	if (timer002 >= 11) {
+		timer002 = 0;
+		enemy[0].enemy.setTextureRect(IntRect(enemyanmationcounter * 41, 0, 38, 44));
+		if (enemy[0].isvisible)  window.draw(enemy[0].enemy);
+	}
+
+
+	int seconds_for_enemies = clock.getElapsedTime().asSeconds();
+	int velocity = 2.f;
+	int displacement = 20.f;
+	for (int i = 0; i < size; i++) {
+		if (velocity * seconds_for_enemies <= displacement) {
+			enemy[i].enemy.move(20.f * Deltatime, 0);
+		}
+		else {
+			enemy[i].enemy.move(-20.f * Deltatime, 0);
+			if ((velocity * seconds_for_enemies) == 2 * displacement)
+				clock.restart();
+		}
+	}
+
+	for (int i = 0; i < size; i++)
+		return enemy[i];
+}
+
+void calculatetime(int& seconds, int& minutes, Clock& clock) {
+	if (seconds == 60) {
+		clock.restart();
+		minutes++;
+	}
+}
+void How_we_want_Time(int seconds, int minutes, Text& text02, RenderWindow& window) {
+	if (seconds < 10) {
+		if (minutes < 10)
+			text02.setString("Time: 0" + to_string(minutes) + ":0" + to_string(seconds));
+		else
+			text02.setString("Time: " + to_string(minutes) + ":0" + to_string(seconds));
+
+	}
+	else {
+		if (minutes < 10)
+			text02.setString("Time: 0" + to_string(minutes) + ":" + to_string(seconds));
+		else
+			text02.setString("Time: " + to_string(minutes) + ":" + to_string(seconds));
 	}
 }
 void END() {}
