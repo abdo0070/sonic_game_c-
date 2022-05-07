@@ -29,7 +29,8 @@ void CameraView(RenderWindow& window, View& camera, Sprite& sonic, Text& text0, 
 void RESUME(RenderWindow& window, Text& text, Text& text1, Sprite& mouse, RectangleShape& background);
 void jump(RenderWindow& window, Sprite& sonic);
 void drow_coin(RenderWindow& window, Sprite coin[]);
-enemies enemiesload_draw_move(RenderWindow& window, enemies enemy[], int& enemyanmationcounter, float Deltatime, Clock& clock);
+void enemiesload_draw(RenderWindow& window, enemies enemy[], int& enemyanmationcounter);
+enemies enemies_move(RenderWindow& window, enemies enemy[], float Deltatime, Clock& clock);
 void calculatetime(int&, int&, Clock&);
 void How_we_want_Time(int, int, Text& text2, RenderWindow&);
 void END();
@@ -267,7 +268,7 @@ int main(void) {
 		
 		int seconds = clock.getElapsedTime().asSeconds();
 		DeltaTime = enemydeltatime.restart().asSeconds();
-		enemies emove = enemiesload_draw_move(window, enemy, enemyanmationcounter, DeltaTime, clock);
+		enemies emove = enemies_move(window, enemy,  DeltaTime, clock);
 
 		calculatetime(seconds, minutes, clock);
 		How_we_want_Time(seconds, minutes, text2, window);
@@ -299,7 +300,8 @@ int main(void) {
 			soundground.play();
 			window.draw(text03);
 			drow_coin(window, coin);
-			enemiesload_draw_move(window, enemy, enemyanmationcounter, DeltaTime, clock);
+			enemiesload_draw(window, enemy, enemyanmationcounter);
+			enemies_move(window, enemy, DeltaTime, clock);
 			calculatetime(seconds, minutes, clock);
 			How_we_want_Time(seconds, minutes, text02, window);
 			if (Keyboard::isKeyPressed(Keyboard::Tab)) {
@@ -617,7 +619,7 @@ void collision_enemies_and_coin(RenderWindow& window, Sprite& sonic, Sprite coin
 
 	}
 }
-enemies enemiesload_draw_move(RenderWindow& window, enemies enemy[], int& enemyanmationcounter, float Deltatime, Clock& clock) {
+void enemiesload_draw(RenderWindow& window, enemies enemy[], int& enemyanmationcounter) {
 
 	enemy[0].enemytexture.loadFromFile("Tex/enemy3.png");
 	for (int i = 0; i < size; i++) {
@@ -634,27 +636,30 @@ enemies enemiesload_draw_move(RenderWindow& window, enemies enemy[], int& enemya
 	if (timer002 >= 11) {
 		timer002 = 0;
 		enemy[0].enemy.setTextureRect(IntRect(enemyanmationcounter * 41, 0, 38, 44));
-		if (enemy[0].isvisible)  window.draw(enemy[0].enemy);
+		if (enemy[0].isvisible) 
+		  window.draw(enemy[0].enemy);
 	}
-
-
-	int seconds_for_enemies = clock.getElapsedTime().asSeconds();
-	int velocity = 2.f;
-	int displacement = 20.f;
-	for (int i = 0; i < size; i++) {
-		if (velocity * seconds_for_enemies <= displacement) {
-			enemy[i].enemy.move(20.f * Deltatime, 0);
-		}
-		else {
-			enemy[i].enemy.move(-20.f * Deltatime, 0);
-			if ((velocity * seconds_for_enemies) == 2 * displacement)
-				clock.restart();
-		}
-	}
-
-	for (int i = 0; i < size; i++)
-		return enemy[i];
 }
+	enemies enemies_move(RenderWindow & window, enemies enemy[], float Deltatime, Clock & clock) {
+		int seconds_for_enemies = clock.getElapsedTime().asSeconds();
+		int velocity = 2.f;
+		int displacement = 20.f;
+		for (int i = 0; i < size; i++) {
+			if (velocity * seconds_for_enemies <= displacement) {
+				enemy[i].enemy.move(20.f * Deltatime, 0);
+			}
+			else {
+				enemy[i].enemy.move(-20.f * Deltatime, 0);
+				if ((velocity * seconds_for_enemies) == 2 * displacement)
+					clock.restart();
+			}
+		}
+
+		for (int i = 0; i < size; i++)
+			return enemy[i];
+	}
+
+
 
 void calculatetime(int& seconds, int& minutes, Clock& clock) {
 	if (seconds == 60) {
