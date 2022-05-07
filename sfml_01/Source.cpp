@@ -24,7 +24,7 @@ struct enemies
 void SONIC_ANIMATION(RenderWindow& window, Sprite& sonic, View& camera);
 void GameWorld(RenderWindow& window, Sprite& flag, Sprite Catus[5], Sprite Block1[10], Sprite Block2[10], Sprite backgroundArr[10], Sprite& ground, Sprite& background);
 void UI(RenderWindow& window, Text& text, Text& text1, Sprite& mouse, RectangleShape& background);
-void Intersections(RenderWindow& window, Sprite& sonic, Sprite catus[5], Sprite& flag, Sprite coin[], Sound& sound, enemies enemy[], Text& text, Sound& soundout, Text& text3, int& Score);
+void Intersections(RenderWindow& window, Sprite& Sonic, Sprite catus[5], Sprite& flag, Sprite coin[], Sound& sound, enemies enemy[], Text& text0, Sound& soundout, Text& text03, int& Score, Sprite spritesndblock[5], Sprite spritesstblock[5]);
 void CameraView(RenderWindow& window, View& camera, Sprite& sonic, Text& text0, Text& text02, Text& text03);
 void RESUME(RenderWindow& window, Text& text, Text& text1, Sprite& mouse, RectangleShape& background);
 void jump(RenderWindow& window, Sprite& sonic);
@@ -44,7 +44,7 @@ void END();
 //void collision_enemies_and_coin(RenderWindow& window, Sprite& sonic, Sprite coin[], Sound& sound, enemies enemy[], Text& text, Sound& soundout, Text& text3, int& score);
 
 // this for switch in UI & RESUME & END
-int score = 0, time1 = 10, time2 = 0 ,time001=0 , timer002;
+int score = 0, time1 = 10, time2 = 0, time001 = 0, timer002;
 int x = 0, y = 0;
 int click = 0;
 
@@ -61,8 +61,8 @@ bool isJumping = false;
 bool isBottom = true;
 float SONICGROUND = -300.f, JUMPHEGHIT = 120.f;
 int rings = 0, coinanmationcounter = 0, enemyanmationcounter = 0;
-
-int main(void) {
+bool  standOn = false;
+int main() {
 	RenderWindow window(VideoMode(WIDTH, HEIGHT), "Sonic");
 	window.setFramerateLimit(30);
 	// Camera view
@@ -268,10 +268,10 @@ int main(void) {
 
 	while (window.isOpen()) {
 		Event event;
-		
+
 		int seconds = clock.getElapsedTime().asSeconds();
 		DeltaTime = enemydeltatime.restart().asSeconds();
-		enemies emove = enemies_move(window, enemy,  DeltaTime, clock);
+		enemies emove = enemies_move(window, enemy, DeltaTime, clock);
 
 		calculatetime(seconds, minutes, clock);
 		How_we_want_Time(seconds, minutes, text2, window);
@@ -289,12 +289,13 @@ int main(void) {
 		if (click == 0)
 			UI(window, text1, text, mouse, backgroundForUI);
 		if (click == 1 && !rs) {
-			
+
 			SONIC_ANIMATION(window, sonic, camera);
 			GameWorld(window, flag, spritescactus, spritesstblock, spritesndblock, spritesbackground, ground, background);
-			Intersections(window, sonic, spritescactus, flag, coin, sound, enemy, text0, soundout, text03, Score);
+			Intersections(window, sonic, spritescactus, flag, coin, sound, enemy, text0, soundout, text03, Score, spritesndblock, spritesstblock);
 			jump(window, sonic);
-			CameraView(window, camera, sonic,text0,text02,text03);
+			CameraView(window, camera, sonic, text0, text02, text03);
+			COLLITION(sonic, spritesndblock, -233.f, -220.f, 50.f, sdsad);
 			window.setView(camera);
 			window.draw(sonic);
 			window.draw(flag);
@@ -320,7 +321,7 @@ int main(void) {
 		window.display();
 	}
 }
-void Intersections(RenderWindow& window, Sprite& sonic, Sprite catus[5], Sprite& flag, Sprite coin[], Sound& sound, enemies enemy[], Text& text0, Sound& soundout, Text& text03, int& Score) {
+void Intersections(RenderWindow& window, Sprite& Sonic, Sprite catus[5], Sprite& flag, Sprite coin[], Sound& sound, enemies enemy[], Text& text0, Sound& soundout, Text& text03, int& Score, Sprite spritesndblock[5], Sprite spritesstblock[5]) {
 	// this for Catus
 	for (int i = 0; i < 5; i++)
 	{
@@ -329,7 +330,7 @@ void Intersections(RenderWindow& window, Sprite& sonic, Sprite catus[5], Sprite&
 		}
 	}
 	// this for flag 
-	if (sonic.getGlobalBounds().intersects(flag.getGlobalBounds())) {
+	if (Sonic.getGlobalBounds().intersects(flag.getGlobalBounds())) {
 		// WHAT WILL HAPPEND
 	}
 
@@ -340,7 +341,7 @@ void Intersections(RenderWindow& window, Sprite& sonic, Sprite catus[5], Sprite&
 	//if (Sonic.getGlobalBounds().intersects(spritesstblock[0].getGlobalBounds()))
 	//	SONICGROUND = -200.f;
 
-	COLLITION(Sonic, spritesndblock, -233.f, -220.f, 50.f, sdsad);
+
 	// this to not jump first block
 	for (int i = 0; i < 5; i++)
 	{
@@ -366,7 +367,7 @@ void Intersections(RenderWindow& window, Sprite& sonic, Sprite catus[5], Sprite&
 	else standOn = false;
 
 	for (int i = 0; i < 4; i++) {
-		if (sonic.getGlobalBounds().intersects(coin[i].getGlobalBounds())) {
+		if (Sonic.getGlobalBounds().intersects(coin[i].getGlobalBounds())) {
 			coin[i].setScale(0, 0);
 			rings++;
 			text0.setString("Rings : " + to_string(rings));
@@ -375,8 +376,8 @@ void Intersections(RenderWindow& window, Sprite& sonic, Sprite catus[5], Sprite&
 	}
 	//int e_x = enemy[0].enemy.getPosition().x;
 	int e_y = enemy[0].enemy.getPosition().y;
-	if (sonic.getGlobalBounds().intersects(enemy[0].enemy.getGlobalBounds())) {
-		if (sonic.getGlobalBounds().intersects(enemy[0].enemy.getGlobalBounds()) && sonic.getPosition().y == e_y)
+	if (Sonic.getGlobalBounds().intersects(enemy[0].enemy.getGlobalBounds())) {
+		if (Sonic.getGlobalBounds().intersects(enemy[0].enemy.getGlobalBounds()) && Sonic.getPosition().y == e_y)
 
 		{
 			score = +100;
@@ -459,7 +460,7 @@ void jump(RenderWindow& window, Sprite& sonic) {
 	}
 	//sonic step.
 }
-void CameraView(RenderWindow& window, View& camera, Sprite& sonic,Text & text0, Text& text02, Text& text03) {
+void CameraView(RenderWindow& window, View& camera, Sprite& sonic, Text& text0, Text& text02, Text& text03) {
 	if (Keyboard::isKeyPressed(Keyboard::D)) {
 		camera.move(Vector2f(4.f, 0.f));
 		text0.move(4.f, 0.f);
@@ -608,13 +609,13 @@ void drow_coin(RenderWindow& window, Sprite coin[]) {
 	if (time001 >= 3) {
 		time001 = 0;
 		for (int i = 0; i < 4; i++) {
-			
-				coin[i].setTextureRect(IntRect(coinanmationcounter * 127.75, coinanmationcounter * 127.75, 127.75, 127.75));
-				window.draw(coin[i]);
-			}
 
+			coin[i].setTextureRect(IntRect(coinanmationcounter * 127.75, coinanmationcounter * 127.75, 127.75, 127.75));
+			window.draw(coin[i]);
 		}
+
 	}
+}
 void collision_enemies_and_coin(RenderWindow& window, Sprite& sonic, Sprite coin[], Sound& sound, enemies enemy[], Text& text, Sound& soundout, Text& text3, int& score) {
 
 	for (int i = 0; i < 4; i++) {
@@ -658,28 +659,29 @@ void enemiesload_draw(RenderWindow& window, enemies enemy[], int& enemyanmationc
 	if (timer002 >= 11) {
 		timer002 = 0;
 		enemy[0].enemy.setTextureRect(IntRect(enemyanmationcounter * 41, 0, 38, 44));
-		if (enemy[0].isvisible) 
-		  window.draw(enemy[0].enemy);
+		if (enemy[0].isvisible)
+			window.draw(enemy[0].enemy);
 	}
 }
-	enemies enemies_move(RenderWindow & window, enemies enemy[], float Deltatime, Clock & clock) {
-		int seconds_for_enemies = clock.getElapsedTime().asSeconds();
-		int velocity = 2.f;
-		int displacement = 20.f;
-		for (int i = 0; i < size; i++) {
-			if (velocity * seconds_for_enemies <= displacement) {
-				enemy[i].enemy.move(20.f * Deltatime, 0);
-			}
-			else {
-				enemy[i].enemy.move(-20.f * Deltatime, 0);
-				if ((velocity * seconds_for_enemies) == 2 * displacement)
-					clock.restart();
-			}
+enemies enemies_move(RenderWindow& window, enemies enemy[], float Deltatime, Clock& clock) {
+	int seconds_for_enemies = clock.getElapsedTime().asSeconds();
+	int velocity = 2.f;
+	int displacement = 20.f;
+	for (int i = 0; i < size; i++) {
+		if (velocity * seconds_for_enemies <= displacement) {
+			enemy[i].enemy.move(20.f * Deltatime, 0);
 		}
-
-		for (int i = 0; i < size; i++)
-			return enemy[i];
+		else {
+			enemy[i].enemy.move(-20.f * Deltatime, 0);
+			if ((velocity * seconds_for_enemies) == 2 * displacement)
+				clock.restart();
+		}
 	}
+
+	for (int i = 0; i < size; i++)
+		return enemy[i];
+}
+
 void calculatetime(int& seconds, int& minutes, Clock& clock) {
 	if (seconds == 60) {
 		clock.restart();
