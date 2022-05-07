@@ -659,8 +659,8 @@ void enemiesload_draw(RenderWindow& window, enemies enemy[], int& enemyanmationc
 	if (timer002 >= 11) {
 		timer002 = 0;
 		enemy[0].enemy.setTextureRect(IntRect(enemyanmationcounter * 41, 0, 38, 44));
-		if (enemy[0].isvisible)
-			window.draw(enemy[0].enemy);
+		if (enemy[0].isvisible) 
+		  window.draw(enemy[0].enemy);
 	}
 }
 enemies enemies_move(RenderWindow& window, enemies enemy[], float Deltatime, Clock& clock) {
