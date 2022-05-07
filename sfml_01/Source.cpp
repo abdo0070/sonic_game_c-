@@ -677,9 +677,10 @@ void enemiesload_draw(RenderWindow& window, enemies enemy[], int& enemyanmationc
 			}
 		}
 
-		for (int i = 0; i < size; i++)
-			return enemy[i];
-	}
+	for (int i = 0; i < size; i++)
+		return enemy[i];
+}
+
 void calculatetime(int& seconds, int& minutes, Clock& clock) {
 	if (seconds == 60) {
 		clock.restart();
