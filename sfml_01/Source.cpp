@@ -1,4 +1,4 @@
-#include<SFML/Graphics.hpp>
+﻿#include<SFML/Graphics.hpp>
 #include<SFML/Window.hpp>
 #include<ctime>
 #include<SFML/Audio.hpp>
@@ -28,8 +28,13 @@ void Intersections(RenderWindow& window, Sprite& sonic, Sprite catus[5], Sprite&
 void CameraView(RenderWindow& window, View& camera, Sprite& sonic, Text& text0, Text& text02, Text& text03);
 void RESUME(RenderWindow& window, Text& text, Text& text1, Sprite& mouse, RectangleShape& background);
 void jump(RenderWindow& window, Sprite& sonic);
+void COLLITION(Sprite& Sonic, Sprite bolcks[5], float blockPos, float newPosForSonicGround, float heightForJump, bool& flag);
+
+
+
 void drow_coin(RenderWindow& window, Sprite coin[]);
-enemies enemiesload_draw_move(RenderWindow& window, enemies enemy[], int& enemyanmationcounter, float Deltatime, Clock& clock);
+void enemiesload_draw(RenderWindow& window, enemies enemy[], int& enemyanmationcounter);
+enemies enemies_move(RenderWindow& window, enemies enemy[], float Deltatime, Clock& clock);
 void calculatetime(int&, int&, Clock&);
 void How_we_want_Time(int, int, Text& text2, RenderWindow&);
 void END();
@@ -38,24 +43,23 @@ void END();
 
 //void collision_enemies_and_coin(RenderWindow& window, Sprite& sonic, Sprite coin[], Sound& sound, enemies enemy[], Text& text, Sound& soundout, Text& text3, int& score);
 
-
+// this for switch in UI & RESUME & END
 int score = 0, time1 = 10, time2 = 0 ,time001=0 , timer002;
 int x = 0, y = 0;
 int click = 0;
+
+// the postitoin for jump
 struct pos {
 	int x, y;
 }sonicPos;
 
-bool rs = false;
+bool rs = false, sdsad = false, sb = false;
 static const int SONIC_Y_BUTTOM = HEIGHT - 60;
-
-float frame = 0.f;
-float frameSpeed = 0.4f;
-const int changeCount = 5;
+// this for jump 
 const int gravity = 5;
 bool isJumping = false;
 bool isBottom = true;
-
+float SONICGROUND = -300.f, JUMPHEGHIT = 120.f;
 int rings = 0, coinanmationcounter = 0, enemyanmationcounter = 0;
 
 int main(void) {
@@ -267,7 +271,7 @@ int main(void) {
 		
 		int seconds = clock.getElapsedTime().asSeconds();
 		DeltaTime = enemydeltatime.restart().asSeconds();
-		enemies emove = enemiesload_draw_move(window, enemy, enemyanmationcounter, DeltaTime, clock);
+		enemies emove = enemies_move(window, enemy,  DeltaTime, clock);
 
 		calculatetime(seconds, minutes, clock);
 		How_we_want_Time(seconds, minutes, text2, window);
@@ -299,7 +303,8 @@ int main(void) {
 			soundground.play();
 			window.draw(text03);
 			drow_coin(window, coin);
-			enemiesload_draw_move(window, enemy, enemyanmationcounter, DeltaTime, clock);
+			enemiesload_draw(window, enemy, enemyanmationcounter);
+			enemies_move(window, enemy, DeltaTime, clock);
 			calculatetime(seconds, minutes, clock);
 			How_we_want_Time(seconds, minutes, text02, window);
 			if (Keyboard::isKeyPressed(Keyboard::Tab)) {
@@ -316,19 +321,49 @@ int main(void) {
 	}
 }
 void Intersections(RenderWindow& window, Sprite& sonic, Sprite catus[5], Sprite& flag, Sprite coin[], Sound& sound, enemies enemy[], Text& text0, Sound& soundout, Text& text03, int& Score) {
-
 	// this for Catus
 	for (int i = 0; i < 5; i++)
 	{
-		if (sonic.getGlobalBounds().intersects(catus[i].getGlobalBounds())) {
+		if (Sonic.getGlobalBounds().intersects(catus[i].getGlobalBounds())) {
 			// WHAT WILL HAPPEND
 		}
 	}
 	// this for flag 
-
 	if (sonic.getGlobalBounds().intersects(flag.getGlobalBounds())) {
-		click = 2;
+		// WHAT WILL HAPPEND
 	}
+
+	// this bool is here because to local , why to be updated in every loop , why to StandOn be Updated also in every loop :(
+	bool stand = false;
+	bool intersection = false;
+
+	//if (Sonic.getGlobalBounds().intersects(spritesstblock[0].getGlobalBounds()))
+	//	SONICGROUND = -200.f;
+
+	COLLITION(Sonic, spritesndblock, -233.f, -220.f, 50.f, sdsad);
+	// this to not jump first block
+	for (int i = 0; i < 5; i++)
+	{
+		if (Sonic.getGlobalBounds().intersects(spritesstblock[i].getGlobalBounds())) {
+			stand = true;
+		}
+	}
+	// this to not jump second block
+	for (int i = 0; i < 5; i++)
+	{
+		if (Sonic.getGlobalBounds().intersects(spritesndblock[i].getGlobalBounds())) {
+			stand = true;
+		}
+	}
+
+	if (SONICGROUND == -300.f) {
+		JUMPHEGHIT = 100.f;
+		sdsad = false;
+
+	}
+	if (stand)
+		standOn = true;
+	else standOn = false;
 
 	for (int i = 0; i < 4; i++) {
 		if (sonic.getGlobalBounds().intersects(coin[i].getGlobalBounds())) {
@@ -353,7 +388,6 @@ void Intersections(RenderWindow& window, Sprite& sonic, Sprite catus[5], Sprite&
 		soundout.play();
 
 	}
-
 }
 void SONIC_ANIMATION(RenderWindow& window, Sprite& sonic, View& camera) {
 	if (Keyboard::isKeyPressed(Keyboard::D)) {
@@ -392,7 +426,7 @@ void SONIC_ANIMATION(RenderWindow& window, Sprite& sonic, View& camera) {
 
 }
 void jump(RenderWindow& window, Sprite& sonic) {
-	if (Keyboard::isKeyPressed(Keyboard::Space))
+	if (Keyboard::isKeyPressed(Keyboard::Space) && !standOn || Keyboard::isKeyPressed(Keyboard::Space) && SONICGROUND == -220.0f)
 	{
 		//std::cout << "Space is pressed";
 		if (isBottom && !isJumping)
@@ -419,18 +453,11 @@ void jump(RenderWindow& window, Sprite& sonic) {
 		isBottom = true;
 	}
 
-	if (sonicPos.y <= 0 - 100)
+	if (sonicPos.y <= 0 - JUMPHEGHIT)
 	{
 		isJumping = false;
 	}
 	//sonic step.
-
-	frame += frameSpeed;
-	if (frame > changeCount)
-	{
-		frame -= changeCount;
-	}
-
 }
 void CameraView(RenderWindow& window, View& camera, Sprite& sonic,Text & text0, Text& text02, Text& text03) {
 	if (Keyboard::isKeyPressed(Keyboard::D)) {
@@ -501,7 +528,6 @@ void UI(RenderWindow& window, Text& text, Text& text1, Sprite& mouse, RectangleS
 	}
 }
 void GameWorld(RenderWindow& window, Sprite& flag, Sprite Catus[5], Sprite Block1[10], Sprite Block2[10], Sprite backgroundArr[10], Sprite& ground, Sprite& background) {
-
 	for (int i = 0; i < 10; i++) {
 		window.draw(backgroundArr[i]);
 	}
@@ -589,8 +615,6 @@ void drow_coin(RenderWindow& window, Sprite coin[]) {
 
 		}
 	}
-
-
 void collision_enemies_and_coin(RenderWindow& window, Sprite& sonic, Sprite coin[], Sound& sound, enemies enemy[], Text& text, Sound& soundout, Text& text3, int& score) {
 
 	for (int i = 0; i < 4; i++) {
@@ -617,7 +641,7 @@ void collision_enemies_and_coin(RenderWindow& window, Sprite& sonic, Sprite coin
 
 	}
 }
-enemies enemiesload_draw_move(RenderWindow& window, enemies enemy[], int& enemyanmationcounter, float Deltatime, Clock& clock) {
+void enemiesload_draw(RenderWindow& window, enemies enemy[], int& enemyanmationcounter) {
 
 	enemy[0].enemytexture.loadFromFile("Tex/enemy3.png");
 	for (int i = 0; i < size; i++) {
@@ -634,28 +658,28 @@ enemies enemiesload_draw_move(RenderWindow& window, enemies enemy[], int& enemya
 	if (timer002 >= 11) {
 		timer002 = 0;
 		enemy[0].enemy.setTextureRect(IntRect(enemyanmationcounter * 41, 0, 38, 44));
-		if (enemy[0].isvisible)  window.draw(enemy[0].enemy);
+		if (enemy[0].isvisible) 
+		  window.draw(enemy[0].enemy);
 	}
-
-
-	int seconds_for_enemies = clock.getElapsedTime().asSeconds();
-	int velocity = 2.f;
-	int displacement = 20.f;
-	for (int i = 0; i < size; i++) {
-		if (velocity * seconds_for_enemies <= displacement) {
-			enemy[i].enemy.move(20.f * Deltatime, 0);
-		}
-		else {
-			enemy[i].enemy.move(-20.f * Deltatime, 0);
-			if ((velocity * seconds_for_enemies) == 2 * displacement)
-				clock.restart();
-		}
-	}
-
-	for (int i = 0; i < size; i++)
-		return enemy[i];
 }
+	enemies enemies_move(RenderWindow & window, enemies enemy[], float Deltatime, Clock & clock) {
+		int seconds_for_enemies = clock.getElapsedTime().asSeconds();
+		int velocity = 2.f;
+		int displacement = 20.f;
+		for (int i = 0; i < size; i++) {
+			if (velocity * seconds_for_enemies <= displacement) {
+				enemy[i].enemy.move(20.f * Deltatime, 0);
+			}
+			else {
+				enemy[i].enemy.move(-20.f * Deltatime, 0);
+				if ((velocity * seconds_for_enemies) == 2 * displacement)
+					clock.restart();
+			}
+		}
 
+		for (int i = 0; i < size; i++)
+			return enemy[i];
+	}
 void calculatetime(int& seconds, int& minutes, Clock& clock) {
 	if (seconds == 60) {
 		clock.restart();
@@ -678,3 +702,44 @@ void How_we_want_Time(int seconds, int minutes, Text& text02, RenderWindow& wind
 	}
 }
 void END() {}
+void COLLITION(Sprite& Sonic, Sprite bolcks[5], float blockPos, float newPosForSonicGround, float heightForJump, bool& flag) {
+	for (int i = 0; i < 5; i++)
+	{
+		if (Sonic.getGlobalBounds().intersects(bolcks[i].getGlobalBounds()) && -300.f - (float)sonicPos.y >= blockPos) {
+			//عايزين سونيك يقف ازاي
+			flag = true;
+		}
+	}
+	if (sdsad && Sonic.getGlobalBounds().intersects(bolcks[0].getGlobalBounds())) {
+		SONICGROUND = newPosForSonicGround;
+		JUMPHEGHIT = heightForJump;
+		std::cout << "got it ....." << std::endl;
+	}
+	else if (sdsad && Sonic.getGlobalBounds().intersects(bolcks[1].getGlobalBounds())) {
+		SONICGROUND = newPosForSonicGround;
+		JUMPHEGHIT = heightForJump;
+		std::cout << "got it ....." << std::endl;
+	}
+	else if (sdsad && Sonic.getGlobalBounds().intersects(bolcks[2].getGlobalBounds())) {
+		SONICGROUND = newPosForSonicGround;
+		JUMPHEGHIT = heightForJump;
+		std::cout << "got it ....." << std::endl;
+	}
+
+	else if (sdsad && Sonic.getGlobalBounds().intersects(bolcks[3].getGlobalBounds())) {
+		SONICGROUND = newPosForSonicGround;
+		JUMPHEGHIT = heightForJump;
+		std::cout << "got it ....." << std::endl;
+	}
+
+	else if (sdsad && Sonic.getGlobalBounds().intersects(bolcks[4].getGlobalBounds())) {
+		SONICGROUND = newPosForSonicGround;
+		JUMPHEGHIT = heightForJump;
+		std::cout << "got it ....." << std::endl;
+	}
+	else {
+		SONICGROUND = -300.f;
+	}
+	std::cout << sdsad << std::endl;
+
+}
